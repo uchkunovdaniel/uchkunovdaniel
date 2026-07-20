@@ -24,9 +24,10 @@ The workflow needs a token to query the GitHub GraphQL API on your behalf.
 3. Under **Account permissions**, grant read access to: Followers, Starring,
    Watching.
 4. Under **Repository permissions**, grant read access to: Commit statuses,
-   Issues, Metadata, Pull requests — and **read and write** access to
-   **Contents** (write is needed so the Action can push the updated SVG
-   back to the repo).
+   Contents, Issues, Metadata, Pull requests. (This token is only used for
+   read-only GraphQL queries in `today.py` — it does not need write access;
+   the commit/push step uses GitHub's built-in `GITHUB_TOKEN` instead, see
+   step 6 below.)
 5. Copy the generated token — you won't see it again.
 
 ## 3. Add repo secrets
@@ -74,10 +75,18 @@ script fills in automatically. Everything else is safe to edit freely.
 ## 6. If you hit a 403 on push
 
 If the Action fails at the `git push` step with something like
-`Permission to .../....git denied to github-actions[bot]`, it's because the
-default `GITHUB_TOKEN` GitHub gives the Action is read-only. This template
-already works around it by checking out the repo with your `ACCESS_TOKEN`
-and by setting `permissions: contents: write` in `build.yaml`, but you also
-need your PAT itself to have **Contents: Read and write** (not just read) —
-see step 2 above.
+`Permission to .../....git denied to github-actions[bot]`, the repo's
+default Actions permissions are read-only. This template sets
+`permissions: contents: write` in `build.yaml`, which is normally enough on
+its own. If it still fails, check **Settings → Actions → General → Workflow
+permissions** in the repo and make sure "Read and write permissions" is
+selected there too (some accounts/orgs default this to read-only and it can
+override the per-workflow setting).
+
+Don't switch the checkout step to use your `ACCESS_TOKEN` PAT to work
+around this — it fixes the 403, but pushes made with a PAT (unlike the
+built-in `GITHUB_TOKEN`) re-trigger the `on: push` workflow, so the bot's
+own commit kicks off a new run, which commits again, forever. Keep checkout
+on the default token; only use `ACCESS_TOKEN` for the GraphQL calls inside
+`today.py`.
 

@@ -303,6 +303,7 @@ def svg_overwrite(filename, age_data, commit_data, star_data, repo_data, contrib
     """
     tree = etree.parse(filename)
     root = tree.getroot()
+    justify_format(root, 'age_data', age_data, 49)
     justify_format(root, 'commit_data', commit_data, 22)
     justify_format(root, 'star_data', star_data, 14)
     justify_format(root, 'repo_data', repo_data, 6)
@@ -429,7 +430,7 @@ if __name__ == '__main__':
     OWNER_ID, acc_date = user_data
     formatter('account data', user_time)
     # TODO: replace the date below with your own birthday (year, month, day)
-    age_data, age_time = perf_counter(daily_readme, datetime.datetime(2008, 5, 16))
+    age_data, age_time = perf_counter(daily_readme, datetime.datetime(2000, 1, 1))
     formatter('age calculation', age_time)
     total_loc, loc_time = perf_counter(loc_query, ['OWNER', 'COLLABORATOR', 'ORGANIZATION_MEMBER'], 7)
     formatter('LOC (cached)', loc_time) if total_loc[-1] else formatter('LOC (no cache)', loc_time)
